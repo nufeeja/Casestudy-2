@@ -1,0 +1,75 @@
+const express=require("express");
+const app=new express();
+const fs=require('fs');      //fs module is used for writting the file or posting
+
+app.use(express.json())
+const data=require('./dataset.json')
+
+app.use(express.static('images'))  //to add a static file.to show in browser "localhost:5000/th.jpg" 
+app.use('/images1',express.static('images1'))   //"localhost:500/images/th1.jpg"
+
+app.get('/employee',(req,res,next)=>{
+res.json(data)
+next()
+},(req,res)=>{
+    console.log("Hiii all")
+}
+)
+ app.post('/employee',(req,res)=>{
+data.push(req.body);
+fs.writeFile('dataset.json',JSON.stringify(data),(err,resp)=>{
+    if(err){
+        res.send("Data cannot be written");
+    }
+    else{
+        res.send("Data written successfully")
+    }
+})
+})
+app.put('/employee/:name',(req,res)=>{
+let name=req.params.name;
+data.forEach((item)=>{
+    if(item.employeeName==name){
+        item.employeeDesignation=req.body.employeeDesignation;
+        item.employeeSalary=req.body.employeeSalary;
+    }
+})
+fs.writeFile('dataset.json',JSON.stringify(data),(err,resp)=>{
+    if(err){res.send("Data could not be updated")}
+    else{
+        res.send("Data updated")
+    }
+})
+})
+
+// app.delete('/employee/:name',(req,res)=>{
+//         let name=req.params.name
+       
+//             let value = data.filter(item => item.employeeName !== name);
+//         fs.writeFile('dataset.json',JSON.stringify(value),(err,resp)=>{
+//             if(err){
+//                 res.send("Data cannot be deleted")
+//             }
+//             else{
+//               res.send("Data deleted")
+//             }
+//         })
+//     })
+
+
+//chaining
+// app.route('/employee')
+// .get((req,res)=>{
+// res.send("hiii")
+// })
+// .post((req,res)=>
+// res.send('Hiii'))
+
+//error handling
+app.use((err,res,req,next)=>{
+    console.error('err.stack')
+    res.status(500).send(`red alert! ${err.stack}`)
+})
+
+app.listen(5000);
+console.log("Server listening to port 5000")
